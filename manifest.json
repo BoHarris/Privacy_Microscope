@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "🔬 Privacy Microscope",
+  "version": "1.0",
+  "description": "Logs tracking headers to provide visibility into online tracking.",
+  "permissions": ["storage", "activeTab", "webRequest"],
+  "host_permissions": ["https://*/*", "http://*/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*/*", "http://*/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "Privacy Shield.webp",
+      "48": "Privacy Shield.webp",
+      "128": "Privacy Shield.webp"
+    }
+  }
+}
