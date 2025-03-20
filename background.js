@@ -10,36 +10,50 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(self.clients.claim());
 });
 
-chrome.webRequest.onBeforeSendHeaders.addListener(
-  function (details) {
-    let trackingHeaders = {};
-    let headersToCapture = ["Referer", "User-Agent", "Cookie"];
+//Apply tracking rules
 
-    for (let header of details.requestHeaders) {
-      if (headersToCapture.includes(header.name)) {
-        trackingHeaders[header.name] = header.value;
-      }
-    }
+chrome.declarativeNetRequest
+  .updateDynamicRules({
+    removeRuleIds: [1],
+    addRules: [
+      {
+        id: 1,
+        priority: 1,
+        action: {
+          type: "modifyHeaders",
+          requestHeaders: [
+            { header: "Referer", operation: "set", value: "Logged" },
+            { header: "User-Agent", operation: "set", value: "Logged" },
+          ],
+        },
+        condition: {
+          urlFilter: "*",
+          resourceTypes: ["main_frame", "xmlhttprequest"],
+        },
+      },
+    ],
+  })
+  .then(() => console.log("Tracking rule applied"))
+  .catch((error) => console.error("Error applying tracking rule:", error));
 
-    if (Object.keys(trackingHeaders).length > 0) {
-      console.log("Captured Tracking Headers:", trackingHeaders);
+//Listen for form tracking data sent to content.js
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "trackingDetected") {
+    console.log("Form Tracking Detected:", message.data);
 
-      // Store captured headers
-      chrome.storage.local.get(["trackingLogs"], function (data) {
-        let logs = data.trackingLogs || [];
-        logs.push({
-          url: details.url,
-          headers: trackingHeaders,
-          time: new Date().toLocaleString(),
-        });
-
-        // Keep only the last 50 logs
-        if (logs.length > 50) logs.shift();
-
-        chrome.storage.local.set({ trackingLogs: logs });
+    //Merge collected form tracking data
+    chrome.storage.local.get(["trackingLogs"], function (data) {
+      let logs = data.trackingLogs || [];
+      logs.push({
+        url: sender.url || (sender.tab && sender.tab.url) || "Unknown URL",
+        collectedFields: message.data, // store what field is collected
+        time: new Date().toLocaleString(),
       });
-    }
-  },
-  { urls: ["<all_urls>"] },
-  ["requestHeaders"]
-);
+      if (logs.length > 50) logs.shift();
+
+      chrome.storage.local.set({ trackingLogs: logs }, () => {
+        console.log("Tracking log updated successfully");
+      });
+    });
+  }
+});
