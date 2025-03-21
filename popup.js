@@ -32,39 +32,15 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       logsContainer.innerHTML = "";
-
       logs.forEach((log) => {
+        let domain = extractDomain(log.url);
         let logEntry = document.createElement("div");
         logEntry.className = "log";
-
-        let domain = extractDomain(log.url);
-        let shortenedUrl =
-          log.url.length > 50
-            ? `<span title ="${log.url}">${log.url.substring(0, 40)} ...</span>`
-            : log.url;
-
-        let headersHtml = log.headers
-          ? `<pre><b>Tracking Headers:</b>\n${JSON.stringify(
-              log.headers,
-              null,
-              2
-            )}</pre>`
-          : "<p><b> No headers captured. </b></p>";
-
-        let formTrackingHtml = log.collectedFields
-          ? `<pre> <b>Collected Form Data:</b>\n${JSON.stringify(
-              log.collectedFields,
-              null,
-              2
-            )}</pre>`
-          : "<p><b>No form tracking detected.</b></p>";
-
         logEntry.innerHTML = `
-      <div class ="timestamp">${log.time}</div>
-      <div class="url"><b>Site:</b> ${domain}</div>
-      ${headersHtml}
-      ${formTrackingHtml}
-       <hr> <!--Comment-->
+          <div class="timestamp">${log.time}</div>
+          <div class="url"><b>Destination:</b>${domain}</div>
+          <div class="url">${log.url}</div>
+          <pre>${JSON.stringify(log.headers, null, 2)}</pre>
         `;
         logsContainer.appendChild(logEntry);
       });

@@ -5,10 +5,8 @@ document.addEventListener("submit", async function (event) {
       return; // skipp the modification when disabled
     }
     let formElements = event.target.elements;
-    let collectedData = {};
-
-    for (let element of formElements) {
-      let fieldName = element.name.toLowerCase();
+    for (let elements of formElements) {
+      let fieldName = elements.name.toLowerCase();
       let fieldType = element.type;
 
       //Exclude important fields for user functions (logging in, captcha ...)
@@ -18,21 +16,11 @@ document.addEventListener("submit", async function (event) {
       ) {
         continue; //skip privacy mods on these fields
       }
-
-      collectedData[fieldName] =
-        element.value.length > 0 ? "Collected" : "Not Collected";
-
       if (fieldType === "text" || fieldType === "number") {
         applyPrivacy(element.value).then((newValue) => {
           element.value = newValue;
         });
       }
     }
-
-    //Send Collected data to the backgroun script for logging
-    chrome.runtime.sendMessage({
-      type: "trackingDetected",
-      data: collectedData,
-    });
   });
 });

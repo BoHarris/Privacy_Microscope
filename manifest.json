@@ -3,12 +3,7 @@
   "name": "🔬 Privacy Microscope",
   "version": "1.0",
   "description": "Logs tracking headers to provide visibility into online tracking.",
-  "permissions": [
-    "storage",
-    "activeTab",
-    "webRequest",
-    "declarativeNetRequestWithHostAccess"
-  ],
+  "permissions": ["storage", "activeTab", "webRequest"],
   "host_permissions": ["https://*/*", "http://*/*"],
   "background": {
     "service_worker": "background.js",
